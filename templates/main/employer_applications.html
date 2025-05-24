@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Quản Lý Hồ Sơ Ứng Tuyển{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Container styling */
+    .container {
+        padding-top: 20px;
+    }
+
+    /* Page title styling */
+    .page-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #e6f0fa;
+        padding-bottom: 10px;
+        margin-bottom: 30px;
+    }
+
+    /* Card styling */
+    .application-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #fff;
+    }
+    .application-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .application-card .card-body {
+        padding: 25px;
+    }
+
+    /* Card content styling */
+    .card-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    .card-text {
+        font-size: 0.95rem;
+        color: #666;
+        line-height: 1.6;
+    }
+    .card-text strong {
+        color: #333;
+    }
+    .card-text .badge {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+        border-radius: 12px;
+    }
+
+    /* Button styling */
+    .btn {
+        font-size: 0.9rem;
+        padding: 8px 15px;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .btn-primary {
+        background: #007bff;
+        border: none;
+    }
+    .btn-primary:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+    }
+    .btn-info {
+        background: #17a2b8;
+        border: none;
+    }
+    .btn-info:hover {
+        background: #117a8b;
+        transform: translateY(-2px);
+    }
+
+    /* Alert styling */
+    .alert-info {
+        border: none;
+        background: #e6f0fa;
+        color: #333;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        font-size: 1rem;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* Fade-in animation for alert */
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Filter section styling */
+    .filter-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    .filter-section .form-group {
+        margin-bottom: 15px;
+    }
+    .filter-section label {
+        font-weight: 600;
+        color: #333;
+    }
+    .filter-section select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    /* CV preview section */
+    .cv-preview {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+    .cv-preview iframe {
+        width: 100%;
+        height: 500px;
+        border: none;
+    }
+
+    /* Status update form */
+    .status-update-form {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="page-title">Quản Lý Hồ Sơ Ứng Tuyển</h2>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <form method="get" class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="status">Trạng thái:</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Chờ xét duyệt</option>
+                        <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Đã chấp nhận</option>
+                        <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Đã từ chối</option>
+                        <option value="hired" {% if request.GET.status == 'hired' %}selected{% endif %}>Đã tuyển</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="job">Công việc:</label>
+                    <select name="job" id="job" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for job in jobs %}
+                            <option value="{{ job.id }}" {% if request.GET.job == job.id|stringformat:"i" %}selected{% endif %}>
+                                {{ job.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="date">Ngày ứng tuyển:</label>
+                    <input type="date" name="date" id="date" class="form-control" value="{{ request.GET.date }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label> </label>
+                    <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    {% if applications %}
+        {% for application in applications %}
+            <div class="card application-card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="card-title">{{ application.job.title }}</h5>
+                            <p class="card-text">
+                                <strong>Ứng viên:</strong> {{ application.applicant.get_full_name|default:application.applicant.username }}<br>
+                                <strong>Email:</strong> {{ application.applicant.email }}<br>
+                                <strong>Ngày ứng tuyển:</strong> {{ application.created_at|date:"d/m/Y" }}<br>
+                                <strong>Trạng thái:</strong> 
+                                <span class="badge {% if application.status == 'pending' %}bg-warning
+                                                  {% elif application.status == 'accepted' %}bg-success
+                                                  {% elif application.status == 'rejected' %}bg-danger
+                                                  {% elif application.status == 'hired' %}bg-info{% endif %}">
+                                    {{ application.get_status_display }}
+                                </span>
+                            </p>
+
+                            <!-- CV Preview Section -->
+                            {% if application.applicant.profile.cv %}
+                                <div class="cv-preview">
+                                    <h6>CV của ứng viên:</h6>
+                                    <a href="{{ application.applicant.profile.cv.url }}" class="btn btn-outline-primary" target="_blank" download>📄 Tải CV</a>
+                                </div>
+                            {% endif %}
+
+                            <!-- Status Update Form -->
+                            {% if request.user.profile.user_type == 'employer' %}
+                                <div class="status-update-form">
+                                    <form method="post" action="{% url 'update_application_status' application.id %}" onsubmit="return confirm('Bạn có chắc chắn muốn cập nhật trạng thái này?');">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <select name="status" class="form-select">
+                                                    {% for value, text in application.STATUS_CHOICES %}
+                                                        <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>
+                                                            {{ text }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <button type="submit" class="btn btn-primary w-100">Cập nhật trạng thái</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            {% endif %}
+
+                            <div class="d-flex justify-content-between mt-3">
+                                <a href="{% url 'view_profile' application.applicant.id %}" class="btn btn-primary">
+                                    Xem Hồ Sơ Chi Tiết
+                                </a>
+                                <a href="{% url 'job_detail' application.job.id %}" class="btn btn-info">
+                                    Xem Việc Làm
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            Chưa có hồ sơ ứng tuyển nào.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

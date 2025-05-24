@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Thông Báo - OPENJOB{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Thông Báo</h2>
+                {% if notifications %}
+                    <a href="{% url 'mark_all_notifications_read' %}" class="btn btn-outline-primary btn-sm">
+                        Đánh dấu tất cả đã đọc
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if notifications %}
+                    <div class="list-group">
+                        {% for notification in notifications %}
+                            <div class="list-group-item {% if notification.status == 'unread' %}list-group-item-light{% endif %}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1">{{ notification.message }}</p>
+                                        <small class="text-muted">{{ notification.created_at|timesince }} trước</small>
+                                    </div>
+                                    {% if notification.status == 'unread' %}
+                                        <a href="{% url 'mark_notification_read' notification.id %}" class="btn btn-sm btn-outline-primary ms-2">
+                                            Đánh dấu đã đọc
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center mb-0">Bạn chưa có thông báo nào.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

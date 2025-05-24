@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Xóa Tin Tuyển Dụng - OPENJOB{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Xác Nhận Xóa</h2>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">Bạn có chắc muốn xóa tin tuyển dụng này?</h5>
+                    <p><strong>{{ job.title }}</strong></p>
+                    <hr>
+                    <p class="mb-0">Hành động này không thể hoàn tác. Tất cả đơn ứng tuyển liên quan đến tin này cũng sẽ bị xóa.</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">Xác Nhận Xóa</button>
+                        <a href="{% url 'job_detail' job.id %}" class="btn btn-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

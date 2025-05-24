@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}  
+
+{% block title %}Trang Chủ - OPENJOB{% endblock %}
+
+{% block content %}
+<!-- <div class="row justify-content-center mb-5">
+    <div class="col-lg-10">
+        <div class="dropdown">
+            <button class="btn btn-light dropdown-toggle fw-bold px-4 py-2 border" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-filter me-2"></i>Lọc theo: <span id="filterLabel">Địa điểm</span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                <li><a class="dropdown-item active" href="#" onclick="setFilter('Địa điểm', event)">Địa điểm</a></li>
+                <li><a class="dropdown-item" href="#" onclick="setFilter('Mức lương', event)">Mức lương</a></li>
+                <li><a class="dropdown-item" href="#" onclick="setFilter('Kinh nghiệm', event)">Kinh nghiệm</a></li>
+                <li><a class="dropdown-item" href="#" onclick="setFilter('Ngành nghề', event)">Ngành nghề</a></li>
+            </ul>
+        </div>
+    </div>
+</div> -->
+<script>
+function setFilter(label, event) {
+    document.getElementById('filterLabel').innerText = label;
+    let items = document.querySelectorAll('.dropdown-menu .dropdown-item');
+    items.forEach(i => i.classList.remove('active'));
+    event.target.classList.add('active');
+}
+</script>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Việc Làm Mới Nhất</h2>
+        <div class="row">
+            {% for job in jobs %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 position-relative">
+                        <!-- Logo nhà tuyển dụng ở góc trái -->
+                        <div class="position-absolute" style="top: 10px; left: 10px;">
+                            {% if job.recruiter.profile.profile_picture %}
+                                <img src="{{ job.recruiter.profile.profile_picture.url }}" alt="Company Logo" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
+                            {% else %}
+                                <img src="{% static 'images/default-logo.png' %}" alt="Default Logo" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
+                            {% endif %}
+                        </div>
+                        <div class="card-body" style="padding-left: 70px;">
+                            <h5 class="card-title">{{ job.title }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                {% if job.recruiter.profile.company_name %}
+                                    {{ job.recruiter.profile.company_name }}
+                                {% else %}
+                                    {{ job.recruiter.get_full_name|default:job.recruiter.username }}
+                                {% endif %}
+                            </h6>
+                            <p class="card-text">{{ job.description|truncatewords:30 }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt"></i> {{ job.location }}
+                                </small>
+                            </p>
+                            <a href="{% url 'job_detail' job.id %}" class="btn btn-primary">Xem Chi Tiết</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <p class="text-center">Chưa có việc làm nào được đăng.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="fas fa-search fa-3x mb-3 text-primary"></i>
+            <h3>Tìm Việc Dễ Dàng</h3>
+            <p>Tìm kiếm việc làm phù hợp với kỹ năng và kinh nghiệm của bạn.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="fas fa-file-alt fa-3x mb-3 text-primary"></i>
+            <h3>Quản Lý Hồ Sơ</h3>
+            <p>Tạo và quản lý hồ sơ xin việc của bạn một cách chuyên nghiệp.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="fas fa-briefcase fa-3x mb-3 text-primary"></i>
+            <h3>Đăng Tuyển Dụng</h3>
+            <p>Đăng tin tuyển dụng và tìm kiếm ứng viên phù hợp cho công ty của bạn.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

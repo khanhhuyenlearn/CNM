@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Đăng Tin Tuyển Dụng - OPENJOB{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Đăng Tin Tuyển Dụng Mới</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        {{ form.title|as_crispy_field }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description|as_crispy_field }}
+                        <small class="text-muted">Mô tả chi tiết về công việc, trách nhiệm và yêu cầu.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.requirements|as_crispy_field }}
+                        <small class="text-muted">Các yêu cầu về kỹ năng, kinh nghiệm, bằng cấp, v.v.</small>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.location|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.salary_range|as_crispy_field }}
+                            <small class="text-muted">Ví dụ: 10-15 triệu/tháng</small>
+                        </div>
+                    </div>
+                    
+                    <!-- <div class="mb-3">
+                        <label class="form-label">Logo Công Ty</label>
+                        {{ form.company_logo }}
+                        <small class="text-muted">Tải lên logo công ty của bạn (định dạng: JPG, PNG, GIF)</small>
+                    </div> -->
+                    
+                    <div class="form-check mb-3">
+                        {{ form.is_active|as_crispy_field }}
+                        <small class="text-muted">Bỏ chọn để ẩn tin tuyển dụng này</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Đăng Tin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

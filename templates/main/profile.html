@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if is_own_profile %}Hồ Sơ Của Tôi{% else %}Hồ Sơ {{ profile_user.get_full_name|default:profile_user.username }}{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #f4f7fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        /* padding: 5px; */
+    }
+    .profile-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        overflow: hidden;
+    }
+    .profile-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(74, 144, 226, 0.2);
+    }
+    .profile-picture {
+        border: 5px solid #fff;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.4s ease;
+        cursor: pointer;
+    }
+    .profile-picture:hover {
+        box-shadow: 0 0 25px #4a90e2;
+        transform: scale(1.08) rotate(2deg);
+    }
+    .card-body {
+        padding: 25px;
+    }
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .text-muted {
+        color: #888 !important;
+        font-size: 0.95rem;
+    }
+    .form-control, textarea.form-control {
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        padding: 12px;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+    .form-control:focus, textarea.form-control:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+        outline: none;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px 0 0 10px;
+        color: #666;
+    }
+    .btn-primary {
+        background: linear-gradient(45deg, #4a90e2, #63a4ff);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #357abd, #4a90e2);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+    }
+    .btn-secondary {
+        background: linear-gradient(45deg, #6c757d, #868e96);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+        background: linear-gradient(45deg, #5a6268, #6c757d);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+    }
+    .avatar-preview {
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 4px solid #4a90e2;
+        box-shadow: 0 3px 12px rgba(74, 144, 226, 0.2);
+        transition: all 0.3s ease;
+    }
+    .d-grid.gap-2 {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 25px;
+    }
+    .alert {
+        border-radius: 10px;
+        margin-bottom: 25px;
+        padding: 15px;
+        font-size: 0.95rem;
+    }
+    .pdf-viewer {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .pdf-viewer iframe {
+        width: 100%;
+        height: 500px;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    .info-section {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    .info-section:hover {
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+    .info-section h6 {
+        color: #4a90e2;
+        font-weight: 600;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+    .info-section p {
+        color: #666;
+        line-height: 1.7;
+        font-size: 0.95rem;
+    }
+    .form-label {
+        font-weight: 500;
+        color: #444;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    @media (max-width: 768px) {
+        .container {
+            padding: 15px;
+        }
+        .profile-card {
+            margin-bottom: 20px;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 1.3rem;
+        }
+        .profile-picture, .avatar-preview {
+            width: 100px;
+            height: 100px;
+        }
+        .btn-primary, .btn-secondary {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+        .pdf-viewer iframe {
+            height: 400px;
+        }
+    }
+    @media (max-width: 576px) {
+        .d-grid.gap-2 {
+            flex-direction: column;
+        }
+        .btn-primary, .btn-secondary {
+            width: 100%;
+        }
+        .info-section {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4 col-sm-12">
+            <div class="card shadow-sm profile-card">
+                <div class="card-body text-center">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle mb-3 profile-picture" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Default Profile Picture" class="rounded-circle mb-3 profile-picture" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                    <h4 class="card-title">
+                        {% if profile.user_type == 'employer' %}
+                            {{ profile.company_name|default:"Chưa cập nhật tên công ty" }}
+                        {% else %}
+                            {{ profile_user.get_full_name|default:profile_user.username }}
+                        {% endif %}
+                    </h4>
+                    <p class="text-muted">{{ profile_user.email }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 col-sm-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {% if is_own_profile %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-12 text-center mb-4">
+                                    <img id="avatarPreview" src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" class="avatar-preview" alt="Avatar Preview">
+                                </div>
+                            </div>
+                            <div class="row">
+                                {% if profile.user_type == 'employer' %}
+                                    <h4 class="mb-4 fw-bold text-center">Thông tin nhà tuyển dụng</h4>
+                                    <div class="col-md-6 col-sm-12 mb-3">
+                                        <label class="form-label">Số điện thoại cá nhân <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fa fa-phone"></i></span>
+                                            {{ form.phone_number }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-12 mb-3">
+                                        <label class="form-label">Công ty <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fa fa-building"></i></span>
+                                            {{ form.company_name }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Địa điểm làm việc <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fa fa-map-marker"></i></span>
+                                            {{ form.address }}
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">Giới thiệu</label>
+                                        <textarea class="form-control" name="bio" rows="4">{{ form.bio.value|default_if_none:'' }}</textarea>
+                                    </div>
+                                {% else %}
+                                    <div class="col-md-6 col-sm-12">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.first_name.id_for_label }}" class="form-label">Tên</label>
+                                            {{ form.first_name }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-12">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Họ</label>
+                                            {{ form.last_name }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-12">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">Số điện thoại</label>
+                                            {{ form.phone_number }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-12">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.address.id_for_label }}" class="form-label">Địa chỉ</label>
+                                            {{ form.address }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Ảnh đại diện</label>
+                                {{ form.profile_picture }}
+                            </div>
+                            {% if profile.user_type == 'applicant' and not request.user.is_staff and not request.user.is_superuser %}
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.cv.id_for_label }}" class="form-label">CV</label>
+                                    {{ form.cv }}
+                                    {% if profile.cv %}
+                                        <div class="mt-2">
+                                            <a href="{{ profile.cv.url }}" class="btn btn-sm btn-info" target="_blank">Xem CV hiện tại</a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            <div class="d-grid gap-2 col-6 mx-auto">
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                <button type="reset" class="btn btn-secondary">Đặt lại</button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <h5 class="card-title mb-4 text-center">Thông Tin Chi Tiết</h5>
+                        <div class="info-section" style="background: #e6f4ff;">
+                            <div class="row">
+                                <div class="col-md-6 col-sm-12">
+                                    <p><strong>Loại tài khoản:</strong>
+                                        {% if profile_user.is_superuser %}
+                                            Quản trị viên
+                                        {% else %}
+                                            {{ profile.get_user_type_display }}
+                                        {% endif %}
+                                    </p>
+                                    {% if profile.user_type == 'employer' %}
+                                        <p><strong>Tên công ty:</strong> {{ profile.company_name|default:"Chưa cập nhật" }}</p>
+                                    {% endif %}
+                                    <p><strong>Số điện thoại:</strong> {{ profile.phone_number|default:"Chưa cập nhật" }}</p>
+                                    <p><strong>Địa chỉ:</strong> {{ profile.address|default:"Chưa cập nhật" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% if profile.bio %}
+                            <div class="info-section">
+                                <h6>Giới thiệu:</h6>
+                                <p class="text-muted">{{ profile.bio }}</p>
+                            </div>
+                        {% endif %}
+                        {% if profile.user_type == 'applicant' and profile.cv %}
+                            <div class="pdf-viewer">
+                                <h6>CV:</h6>
+                                <iframe src="{{ profile.cv.url }}" allowfullscreen></iframe>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+
+    // Avatar preview
+    const input = document.querySelector('input[type="file"][name$="profile_picture"]');
+    if (input) {
+        input.addEventListener('change', function(e) {
+            const [file] = input.files;
+            if (file) {
+                document.getElementById('avatarPreview').src = URL.createObjectURL(file);
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}
+{% endblock %}

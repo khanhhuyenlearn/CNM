@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Hồ Sơ Nhà Tuyển Dụng - OPENJOB{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Hồ Sơ Công Ty</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" class="img-fluid rounded mb-3" style="max-width: 150px;">
+                        {% else %}
+                            <img src="https://via.placeholder.com/150" class="img-fluid rounded mb-3" alt="Company Logo">
+                        {% endif %}
+                        <h5>{{ profile.company_name|default:user.username }}</h5>
+                        <p class="text-muted">{{ profile.get_user_type_display }}</p>
+                    </div>
+                    <div class="col-md-9">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    {{ form.user_type|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.company_name|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    {{ form.phone_number|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.address|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.bio|as_crispy_field }}
+                                <small class="text-muted">Mô tả ngắn gọn về công ty của bạn</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.profile_picture|as_crispy_field }}
+                                <small class="text-muted">Tải lên logo công ty</small>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">Việc Làm Đã Đăng</h3>
+                <a href="{% url 'create_job' %}" class="btn btn-success">Đăng Việc Làm Mới</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tiêu đề</th>
+                                <th>Địa điểm</th>
+                                <th>Ngày đăng</th>
+                                <th>Số lượng ứng viên</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in user.job_set.all %}
+                                <tr>
+                                    <td>{{ job.title }}</td>
+                                    <td>{{ job.location }}</td>
+                                    <td>{{ job.created_at|date:"d/m/Y" }}</td>
+                                    <td>{{ job.application_set.count }}</td>
+                                    <td>
+                                        {% if job.is_active %}
+                                            <span class="badge bg-success">Đang hiển thị</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Đã ẩn</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-info">Xem</a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Bạn chưa đăng tin tuyển dụng nào</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Hồ Sơ Ứng Viên - OPENJOB{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* General card styling */
+    .profile-card, .application-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .profile-card:hover, .application-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .card-header {
+        background: linear-gradient(90deg, #007bff, #66b0ff); /* Blue gradient */
+        color: white;
+        border-radius: 10px 10px 0 0;
+        padding: 15px 20px;
+    }
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    .card-body {
+        padding: 30px;
+    }
+
+    /* Profile picture styling */
+    .profile-picture {
+        max-width: 150px;
+        border: 3px solid #007bff;
+        transition: transform 0.3s ease;
+    }
+    .profile-picture:hover {
+        transform: scale(1.05);
+    }
+
+    /* Typography and spacing for profile details */
+    .profile-details h3 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .profile-details .text-muted {
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    .profile-details p {
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 10px;
+    }
+    .profile-details strong {
+        color: #333;
+    }
+
+    /* Section headers (Giới thiệu, Kỹ năng, etc.) */
+    .section-header {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #007bff;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #e6f0fa;
+        padding-bottom: 5px;
+    }
+    .section-content {
+        font-size: 0.95rem;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    /* CV button styling */
+    .cv-button {
+        background: #007bff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        transition: background 0.3s ease;
+    }
+    .cv-button:hover {
+        background: #0056b3;
+    }
+    .cv-button i {
+        margin-right: 5px;
+    }
+
+    /* Application list styling */
+    .application-item {
+        border: 1px solid #e6f0fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        padding: 15px;
+        transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .application-item:hover {
+        background: #f8f9fa;
+        transform: translateY(-3px);
+    }
+    .application-item h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    .application-item .text-muted {
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+    }
+    .application-item .badge {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+    }
+    .application-item .btn {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+        transition: background 0.3s ease;
+    }
+    .application-item .btn:hover {
+        background: #0056b3;
+        border-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card profile-card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="card-title mb-0">Hồ Sơ Ứng Viên</h2>
+                <span class="badge bg-light text-primary">{{ applicant.profile.get_user_type_display }}</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-4">
+                        {% if applicant.profile.profile_picture %}
+                            <img src="{{ applicant.profile.profile_picture.url }}" class="img-fluid rounded-circle mb-3 profile-picture" alt="Profile Picture">
+                        {% else %}
+                            <img src="{% static 'images/user.jpg' %}" class="img-fluid rounded-circle mb-3 profile-picture" alt="Profile Picture">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9 profile-details">
+                        <h3>{{ applicant.get_full_name|default:applicant.username }}</h3>
+                        <p class="text-muted">{{ applicant.email }}</p>
+                        
+                        {% if applicant.profile.phone_number %}
+                            <p><strong>Số điện thoại:</strong> {{ applicant.profile.phone_number }}</p>
+                        {% endif %}
+                        
+                        {% if applicant.profile.address %}
+                            <p><strong>Địa chỉ:</strong> {{ applicant.profile.address }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <hr>
+                
+                {% if applicant.profile.bio %}
+                    <div class="mb-4">
+                        <h4 class="section-header">Giới thiệu</h4>
+                        <p class="section-content">{{ applicant.profile.bio|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                
+                {% if applicant.profile.skills %}
+                    <div class="mb-4">
+                        <h4 class="section-header">Kỹ năng</h4>
+                        <p class="section-content">{{ applicant.profile.skills|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                
+                {% if applicant.profile.experience %}
+                    <div class="mb-4">
+                        <h4 class="section-header">Kinh nghiệm làm việc</h4>
+                        <p class="section-content">{{ applicant.profile.experience|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                
+                {% if applicant.profile.education %}
+                    <div class="mb-4">
+                        <h4 class="section-header">Học vấn</h4>
+                        <p class="section-content">{{ applicant.profile.education|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                
+                {% if applicant.profile.cv %}
+                    <div class="mb-4">
+                        <h4 class="section-header">CV</h4>
+                        <a href="{{ applicant.profile.cv.url }}" class="btn btn-primary cv-button" target="_blank">
+                            <i class="fas fa-file-pdf"></i> Xem CV
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card application-card mb-4">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Đơn ứng tuyển</h4>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for application in applications %}
+                        <div class="list-group-item application-item">
+                            <h5 class="mb-1">{{ application.job.title }}</h5>
+                            <p class="mb-1">
+                                <small class="text-muted">Ngày ứng tuyển: {{ application.applied_at|date:"d/m/Y" }}</small>
+                            </p>
+                            <p class="mb-1">
+                                <span class="badge 
+                                    {% if application.status == 'applied' %}bg-info
+                                    {% elif application.status == 'interview' %}bg-primary
+                                    {% elif application.status == 'rejected' %}bg-danger
+                                    {% elif application.status == 'hired' %}bg-success
+                                    {% endif %}">
+                                    {{ application.get_status_display }}
+                                </span>
+                            </p>
+                            <a href="{% url 'job_detail' application.job.id %}" class="btn btn-sm btn-outline-primary mt-2">Xem chi tiết công việc</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

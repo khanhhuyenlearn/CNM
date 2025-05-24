@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}  
+
+{% block title %}{{ job.title }} - OPENJOB{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="card-title mb-0">{{ job.title }}</h2>
+                {% if is_recruiter %}
+                    <div>
+                        <a href="{% url 'edit_job' job.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger btn-sm ms-2">
+                            <i class="fas fa-trash"></i> Xóa
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-10">
+                        <h4 class="mb-3">
+                            {% if job.recruiter.profile.company_name %}
+                                {{ job.recruiter.profile.company_name }}
+                            {% else %}
+                                {{ job.recruiter.get_full_name|default:job.recruiter.username }}
+                            {% endif %}
+                        </h4>
+                        <p class="mb-2">
+                            <i class="fas fa-map-marker-alt text-primary"></i> {{ job.location }}
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-money-bill-wave text-primary"></i> {{ job.salary_range }}
+                        </p>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h5 class="text-primary">Thông tin công việc</h5>
+                    <p>{{ job.description|linebreaks }}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h5 class="text-primary">Yêu cầu</h5>
+                    <p>{{ job.requirements|linebreaks }}</p>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="text-primary">Địa điểm</h5>
+                        <p><i class="fas fa-map-marker-alt me-2"></i>{{ job.location }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-primary">Mức lương</h5>
+                        <p><i class="fas fa-money-bill-wave me-2"></i>{{ job.salary_range }}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h5 class="text-primary">Nhà tuyển dụng</h5>
+                    <div class="d-flex align-items-center">
+                        <p class="mb-0">
+                            {% if job.recruiter.profile.company_name %}
+                                {{ job.recruiter.profile.company_name }}
+                            {% else %}
+                                {{ job.recruiter.get_full_name|default:job.recruiter.username }}
+                            {% endif %}
+                        </p>
+                        {% if not is_recruiter %}
+                            <a href="{% url 'view_employer_profile' job.recruiter.id %}" class="btn btn-sm btn-link">
+                                <i class="fas fa-info-circle"></i> Xem thông tin
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="text-muted">Đăng ngày: {{ job.created_at|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                {% if user.is_authenticated and not is_recruiter %}
+                    {% if has_applied %}
+                        <button class="btn btn-success" disabled>Đã ứng tuyển</button>
+                    {% else %}
+                        {% if job and not has_applied and request.user.is_authenticated and request.user.profile.user_type == 'applicant' and not request.user.is_staff and not request.user.is_superuser %}
+                            <a href="{% url 'apply_job' job.id %}" class="btn btn-primary">Ứng tuyển ngay</a>
+                        {% else %}
+                            <button class="btn btn-secondary" disabled>Chỉ ứng viên mới có thể ứng tuyển</button>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        {% if is_recruiter and applications %}
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">Danh sách ứng viên ({{ applications.count }})</h4>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for application in applications %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0">
+                                        {% if application.applicant.get_full_name %}
+                                            {{ application.applicant.get_full_name }}
+                                        {% else %}
+                                            {{ application.applicant.username }}
+                                        {% endif %}
+                                    </h5>
+                                    <a href="{% url 'view_applicant_profile' application.applicant.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-user"></i> Xem hồ sơ
+                                    </a>
+                                </div>
+                                <p class="mb-1">
+                                    <small class="text-muted">Ngày ứng tuyển: {{ application.applied_at|date:"d/m/Y" }}</small>
+                                </p>
+                                <p class="mb-1">
+                                    <span class="badge 
+                                        {% if application.status == 'applied' %}bg-info
+                                        {% elif application.status == 'interview' %}bg-primary
+                                        {% elif application.status == 'rejected' %}bg-danger
+                                        {% elif application.status == 'hired' %}bg-success
+                                        {% endif %}">
+                                        {{ application.get_status_display }}
+                                    </span>
+                                </p>
+                                <form method="post" action="{% url 'update_application_status' application.id %}" class="mt-2">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <select name="status" class="form-select form-select-sm">
+                                            {% for value, text in application.STATUS_CHOICES %}
+                                                <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>
+                                                    {{ text }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

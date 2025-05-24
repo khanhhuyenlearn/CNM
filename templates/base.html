@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hệ Thống Quản Lý Hồ Sơ Xin Việc{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .notification-dropdown {
+            min-width: 300px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .notification-item {
+            white-space: normal;
+            border-bottom: 1px solid #eee;
+            padding: 8px 12px;
+        }
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        .notification-item.unread {
+            background-color: #f0f8ff;
+        }
+        .notification-message {
+            margin-bottom: 5px;
+        }
+        .notification-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .navbar-nav .nav-link, .btn {
+            font-size: 1.25rem !important;
+            font-family: 'Open Sans', sans-serif !important;
+        }
+        .navbar-brand {
+            font-size: 1.25rem !important;
+            font-family: 'Georgia', serif !important;
+        }
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        .auth-modal .modal-dialog {
+            max-width: 450px;
+        }
+        .auth-modal .modal-content {
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+        }
+        /* Styling for login/signup buttons in navbar */
+        .auth-btn {
+            border: 2px solid #ffffff;
+            border-radius: 20px;
+            padding: 5px 15px;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        .auth-btn:hover {
+            background-color: #ffffff;
+            color: #007bff;
+            border-color: #ffffff;
+        }
+        .auth-btn:active {
+            background-color: #e6e6e6 !important;
+            color: #0056b3 !important;
+        }
+        footer {
+            background-color: #7aadef; /* Light green color */
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <img src="{% static 'images/LOGO.png' %}" alt="Logo" class="img-fluid">
+                OPENJOB
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'job_list' %}">Việc Làm</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">Tạo Hồ Sơ</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Thông Báo
+                                {% if unread_notification_count > 0 %}
+                                    <span class="badge bg-danger">{{ unread_notification_count }}</span>
+                                {% endif %}
+                            </a>
+                            <div class="dropdown-menu notification-dropdown" aria-labelledby="notificationDropdown">
+                                <h6 class="dropdown-header">Thông báo của bạn</h6>
+                                <div class="dropdown-divider"></div>
+                                
+                                {% for notification in user.notification_set.all|slice:":5" %}
+                                    <div class="notification-item {% if notification.status == 'unread' %}unread{% endif %}">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="notification-message">{{ notification.message }}</div>
+                                            {% if notification.status == 'unread' %}
+                                                <a href="{% url 'mark_notification_read' notification.id %}" class="text-primary ms-2" title="Đánh dấu đã đọc">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                        <div class="notification-time">{{ notification.created_at|timesince }} trước</div>
+                                    </div>
+                                {% empty %}
+                                    <div class="dropdown-item">Không có thông báo nào</div>
+                                {% endfor %}
+                                
+                                <div class="dropdown-divider"></div>
+                                <div class="d-flex justify-content-between px-3 py-2">
+                                    <a href="{% url 'notifications' %}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                                    {% if unread_notification_count > 0 %}
+                                        <a href="{% url 'mark_all_notifications_read' %}" class="btn btn-sm btn-outline-primary">
+                                            Đánh dấu tất cả đã đọc
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                    {% if user.profile.user_type == 'employer' %}
+                        <li class="nav-item d-flex align-items-center me-2">
+                            <a href="{% url 'create_job' %}" class="btn btn-warning fw-bold">Đăng Tin Tuyển Dụng</a>
+                        </li>
+                    {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if user.profile.profile_picture %}
+                                    <img src="{{ user.profile.profile_picture.url }}" alt="avatar" class="rounded-circle" style="width:32px; height:32px; object-fit:cover;">
+                                {% else %}
+                                    <img src="{% static 'images/user.jpg' %}" alt="avatar" class="rounded-circle" style="width:32px; height:32px; object-fit:cover;">
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'view_profile' user.id %}"><i class="fas fa-user me-2"></i>Thông tin cá nhân</a>
+                                </li>
+                                {% if user.profile.user_type == 'employer' or user.is_superuser %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'employer_applications' %}"><i class="fas fa-file-alt me-2"></i>Quản lý CV</a>
+                                    </li>
+                                {% elif user.profile.user_type == 'applicant' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'my_applications' %}"><i class="fas fa-file-alt me-2"></i>Hồ sơ đã nộp</a>
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if not user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link auth-btn" href="#" data-bs-toggle="modal" data-bs-target="#authModal" onclick="showLogin()">Đăng Nhập</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link auth-btn" href="#" data-bs-toggle="modal" data-bs-target="#authModal" onclick="showSignup()">Đăng Ký</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Modal for Login/Signup -->
+    <div class="modal fade auth-modal" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    {% include 'main/login.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if request.resolver_match.url_name == 'home' %}
+    <div class="header-image position-relative">
+        <img src="{% static 'images/header1.jpg' %}" alt="Header Image" class="img-fluid w-100" style="max-height: 400px; object-fit: cover;">
+        <div class="position-absolute top-50 start-50 translate-middle text-center text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+            <h1 class="display-4 fw-bold mb-3">Chào mừng đến với OpenJob</h1>
+            <p class="lead fs-3">Nền tảng kết nối ứng viên và nhà tuyển dụng</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer class="mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">© 2024 JobPortal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showLogin() {
+            document.getElementById('login').checked = true;
+            document.querySelector('form.login').style.marginLeft = "0%";
+            document.querySelector('.title-text .login').style.marginLeft = "0%";
+        }
+
+        function showSignup() {
+            document.getElementById('signup').checked = true;
+            document.querySelector('form.login').style.marginLeft = "-50%";
+            document.querySelector('.title-text .login').style.marginLeft = "-50%";
+        }
+
+        // Handle tab switching within the modal
+        document.addEventListener('shown.bs.modal', function () {
+            document.querySelector('label.login').onclick = () => {
+                showLogin();
+            };
+            document.querySelector('label.signup').onclick = () => {
+                showSignup();
+            };
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
