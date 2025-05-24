@@ -1,0 +1,31 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    command: >
+      bash -c "python manage.py collectstatic --noinput &&
+               gunicorn --timeout 120 --workers 2 --log-level debug --bind 0.0.0.0:8000 jobportal.wsgi:application"
+    volumes:
+      - .:/app
+      - ./staticfiles:/app/staticfiles
+      - ./static:/app/static
+      - ./media:/app/media
+    networks:
+      - tunnel-network
+    restart: unless-stopped
+
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    command: tunnel --no-autoupdate run --token eyJhIjoiNWVhNTM5NjYwODdmNjcwMTVmNjYyMTkwZjgyMDE4NDIiLCJ0IjoiMzc5M2IyMDctOTdlMy00OGVhLTlhMmEtYTQzZWM5MDQxOGIzIiwicyI6Ik5tTm1ZakJrWVdNdE1ETXlOaTAwWkRRNUxXSXpObUl0TkRRNE1EbGlNekU1WkRGaiJ9
+    networks:
+      - tunnel-network
+    restart: unless-stopped
+
+networks:
+  tunnel-network:
+    name: tunnel-network
